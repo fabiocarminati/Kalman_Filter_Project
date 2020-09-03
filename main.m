@@ -781,6 +781,9 @@ switch task5Switch
         fprintf('no plot of task 5 \n');
 end
 
+
+
+
 %% Task 6
 rhoTraining6 = importdata("GR35/Task6_rhoUEAP_GR35.mat");
 % allora se elemento in rhoTraining(1, :) è NaN, togli il rispettivo AP da
@@ -804,21 +807,21 @@ predictions= zeros(4, size(rhoTraining6,1)); % used for plotting
 
 u_hat_trajectory = zeros(size(rhoTraining6,1), 2);
 
-inv_R = inv(R); % calculating only one time, the inverse of R
 
+missing_info=[];
 % defining C
 C_stored_5 = cell(1,size(rhoTraining6,1));
 sigma_h_5 = zeros(1,size(rhoTraining6,1));
 CEP95_5 = zeros(1,size(rhoTraining6,1));
 % END initialization kalman filter task 5
-
-sizeValidMeasurements=0;
-indexValidMeasurements=zeros(1,Number_of_APs);
-
+invalidRho=0;
 u_hat=zeros(2,1); % initialization of u_hat coordinates
 % not the same H of kalman filter(which is a 8*4)
-for i = 1:(size(rhoTraining6,1))
+for i = 21:(size(rhoTraining6,1))
+    sizeValidMeasurements=0;
+    indexValidMeasurements=zeros(1,Number_of_APs);
     for w=1:4 % max_iterations
+        invalidRho=0;
         delta_ro_k=zeros(1,1); %this time delta_ro_k is by default of size 1 and could be of size 8 only if all the 8 rhos are not NaN
         H_k=zeros(1,2); %this time H_k is by default of size 1 and could be of size 8 only if all the 8 rhos are not NaN
         firstValidValue=false;
@@ -840,101 +843,116 @@ for i = 1:(size(rhoTraining6,1))
                 H_k(size_H_k,2) = vpa(subs(a_dy, [ux_hat, uy_hat], [u_hat(1,1), u_hat(2,1)]), 5);
                 delta_ro_j_k=rhoTraining6(i,j)-sqrt((AP(j,1) - u_hat(1,1))^2 + (AP(j,2) - u_hat(2,1))^2);
                 delta_ro_k(size_H_k,1)=delta_ro_j_k;
+            else
+                invalidRho=invalidRho+1;
             end
-            
         end
-        %INVERSION
-        delta_u_k=inv(H_k'*H_k)*H_k'*delta_ro_k;
-        %UPDATE SOLUTION
-        u_hat=u_hat+delta_u_k;
-        
-        %saving u_hat for plotting
-        u_hat_trajectory(i,:) = u_hat';
-        sizeValidMeasurements=size(H_k,1);
-    end
   
-    %EKF code using x_hat as current location 
-
-    % PREDICTION SECTION OF KALMAN FILTER
-    % assuming F, Q constant
         
-    if (i == 1)
-        x_hat_t_minus_t_minus = u_hat; % still missing the velocity part
-    
-        x_hat_t_minus_t_minus(3,1) = 0; % we suppose velocity on y axis and x axis is = 0 since we have no info
-        x_hat_t_minus_t_minus(4,1) = 0; 
-        
-        x_hat_t_t_minus = x_hat_t_minus_t_minus;
-        P_t_t_minus = P_t_minus_t_minus;    
-    else
-        x_hat_t_t_minus = F * x_hat_t_minus_t_minus; % remember to update at the end x_hat_t_minus_t_minus
-        P_t_t_minus = F * P_t_minus_t_minus * F' + Q; % remember to update at the end P_t_minus_t_minus
+       
+        %INVERSION
+        if(size_H_k>1 && invalidRho<Number_of_APs)
+            delta_u_k=inv(H_k'*H_k)*H_k'*delta_ro_k;
+            %UPDATE SOLUTION
+            u_hat=u_hat+delta_u_k;
+        %if size==1 delta_u_k explodes-->I can say that for that point I do not have enough information->I cannot update x_hat
+        end
     end
-    
-   predictions(:,i)=x_hat_t_t_minus(:,1); % for plotting
-    %UPDATE SECTION OF KALMAN FILTER
-    
-    % CALCULATING H
-    H = zeros(sizeValidMeasurements,4);
-    h = zeros(sizeValidMeasurements,1);
-    rhoValid=zeros(1,sizeValidMeasurements);
-    sizeRhoValid=1;
-    inv_R_Partial=zeros(1,1);
-    for j = 1 : Number_of_APs
-        if(indexValidMeasurements(1,j)>0)
-            h(sizeRhoValid,1) = sqrt((AP(j,1) - x_hat_t_t_minus(1,1))^2 + (AP(j,2) - x_hat_t_t_minus(2,1))^2);
-            rhoValid(1,sizeRhoValid)=rhoTraining6(i, j);
-            syms ux uy; % computing H through derivatives
-            f = sqrt((AP(j,1) - ux)^2 + (AP(j,2) - uy)^2);
-            a_dx = diff(f, ux);
-            a_dy = diff(f, uy);
-            a_ux_final = vpa(subs(a_dx, [ux, uy], [u_hat(1,1), u_hat(2,1)]), 5);
-            a_uy_final = vpa(subs(a_dy, [ux, uy], [u_hat(1,1), u_hat(2,1)]), 5);
+    %saving u_hat for plotting
+    u_hat_trajectory(i,:) = u_hat';
+    sizeValidMeasurements=size(H_k,1);
 
-            H(sizeRhoValid,1) = a_ux_final; % no minus because we use the approach of the derivatives.
-            H(sizeRhoValid,2) = a_uy_final;
-            H(sizeRhoValid,3) = 0; % h is constant w.r.t velocity => derivative w.r.t velocity = 0
-            H(sizeRhoValid,4) = 0; % same here
-            
-            inv_R_Partial(sizeRhoValid,:)=0;
-            inv_R_Partial(:,sizeRhoValid)=0;
-            inv_R_Partial(sizeRhoValid,sizeRhoValid)=inv_R(j,j);
-            sizeRhoValid=sizeRhoValid+1;
+    if(invalidRho==Number_of_APs || invalidRho==Number_of_APs-1)
+        fprintf('there are no rho measurements available for this step->no prediction can be done:valid %d \n',Number_of_APs-invalidRho);
+        predictions([1 2],i)=u_hat; %riassegno come prediction ux,uy quella dello step precedente e con vx,vy=0
+    else    
+        %EKF code using x_hat as current location 
+
+        % PREDICTION SECTION OF KALMAN FILTER
+        % assuming F, Q constant
+
+        if (i == 1)
+            x_hat_t_minus_t_minus = u_hat; % still missing the velocity part
+            x_hat_t_minus_t_minus(3,1) = 0; % we suppose velocity on y axis and x axis is = 0 since we have no info
+            x_hat_t_minus_t_minus(4,1) = 0;   
+            x_hat_t_t_minus = x_hat_t_minus_t_minus;
+            P_t_t_minus = P_t_minus_t_minus;    
+        else
+            x_hat_t_t_minus = F * x_hat_t_minus_t_minus; % remember to update at the end x_hat_t_minus_t_minus
+            P_t_t_minus = F * P_t_minus_t_minus * F' + Q; % remember to update at the end P_t_minus_t_minus
         end
 
+        predictions(:,i)=x_hat_t_t_minus(:,1); % for plotting
+        %UPDATE SECTION OF KALMAN FILTER
+
+        % CALCULATING H
+        H = zeros(sizeValidMeasurements,4);
+        h = zeros(sizeValidMeasurements,1);
+        rhoValid=zeros(1,sizeValidMeasurements);
+        sizeRhoValid=1;
+        R_Partial=zeros(sizeValidMeasurements,sizeValidMeasurements);
+        for j = 1 : Number_of_APs
+            if(indexValidMeasurements(1,j)>0)
+                h(sizeRhoValid,1) = sqrt((AP(j,1) - x_hat_t_t_minus(1,1))^2 + (AP(j,2) - x_hat_t_t_minus(2,1))^2);
+                rhoValid(1,sizeRhoValid)=rhoTraining6(i, j);
+                syms ux uy; % computing H through derivatives
+                f = sqrt((AP(j,1) - ux)^2 + (AP(j,2) - uy)^2);
+                a_dx = diff(f, ux);
+                a_dy = diff(f, uy);
+                a_ux_final = vpa(subs(a_dx, [ux, uy], [u_hat(1,1), u_hat(2,1)]), 5);
+                a_uy_final = vpa(subs(a_dy, [ux, uy], [u_hat(1,1), u_hat(2,1)]), 5);
+
+                H(sizeRhoValid,1) = a_ux_final; % no minus because we use the approach of the derivatives.
+                H(sizeRhoValid,2) = a_uy_final;
+                H(sizeRhoValid,3) = 0; % h is constant w.r.t velocity => derivative w.r.t velocity = 0
+                H(sizeRhoValid,4) = 0; % same here
+
+                R_Partial(sizeRhoValid,sizeRhoValid)=R(j,j);
+                sizeRhoValid=sizeRhoValid+1;
+            end
+
+        end
+        %if R is 1*1 is not possible to make the inverse
+        if(size(R_Partial,1)==1)
+            inv_R_Partial=R_Partial;
+        else
+            inv_R_Partial=inv(R_Partial);
+        end
+
+        inv_P = inv(P_t_t_minus);
+        tmp = (H'* inv_R_Partial * H); % optimizing inverse operation. that's why we use \ instead of inv()
+        tempA = inv(inv_P + tmp);
+
+        % updating variables
+        x_hat_t_t = x_hat_t_t_minus + tempA * H' * inv_R_Partial * (rhoValid' - h);
+        P_t_t = inv(inv_P + tmp);
+        x_hat_t_minus_t_minus = x_hat_t_t;
+        P_t_minus_t_minus = P_t_t;
+
+        %{ 
+        H,R attenzione
+        %computing performance metrics
+        %CALCULATING C
+        C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies are different among themselves;
+        C_stored_5(1, i) = mat2cell(C,2); % storing C
+        sigma_h_5(1, i) = sqrt(C(1,1) + C(2,2)); % drms
+        CEP95_5(1, i) = 2 * sigma_h_5(1, i); % CEP
+        %}
+
+        % CRITICAL COMPARISON COMMENT:
+        % w.r.t Task 4 we noticed by plotting the trajectories that the
+        % trajectory of task 5 is more or less the same of the task 4, but with
+        % greater variability on the distances between consecutive points (probably due
+        % to the missing information about the velocity)
     end
-    
-    inv_P = inv(P_t_t_minus);
-    
-    tmp = (H'* inv_R_Partial * H); % optimizing inverse operation. that's why we use \ instead of inv()
-    tempA = inv(inv_P + tmp);
-    
-    % updating variables
-    x_hat_t_t = x_hat_t_t_minus + tempA * H' * inv_R_Partial * (rhoValid' - h);
-    P_t_t = inv(inv_P + tmp);
-    
-    x_hat_t_minus_t_minus = x_hat_t_t;
-    P_t_minus_t_minus = P_t_t;
-    
-    %computing performance metrics
-    %CALCULATING C
-    C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies are different among themselves;
-    C_stored_5(1, i) = mat2cell(C,2); % storing C
-    sigma_h_5(1, i) = sqrt(C(1,1) + C(2,2)); % drms
-    CEP95_5(1, i) = 2 * sigma_h_5(1, i); % CEP
-    
-    % CRITICAL COMPARISON COMMENT:
-    % w.r.t Task 4 we noticed by plotting the trajectories that the
-    % trajectory of task 5 is more or less the same of the task 4, but with
-    % greater variability on the distances between consecutive points (probably due
-    % to the missing information about the velocity)
     
     %TODO: Add the switch 
-    if(mod(i, 50)== 0) % stopping before completing
+    if(mod(i, 41)== 0) % stopping before completing
         fprintf('stopping kalman iteration Task 6\n');
         break;
     end
        
+
 end
 
 %% PLOT KALMAN TRACKING Task 6
