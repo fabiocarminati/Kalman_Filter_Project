@@ -810,14 +810,14 @@ u_hat_trajectory = zeros(size(rhoTraining6,1), 2);
 
 missing_info=[];
 % defining C
-C_stored_5 = cell(1,size(rhoTraining6,1));
-sigma_h_5 = zeros(1,size(rhoTraining6,1));
-CEP95_5 = zeros(1,size(rhoTraining6,1));
+C_stored_6 = cell(1,size(rhoTraining6,1));
+sigma_h_6 = zeros(1,size(rhoTraining6,1));
+CEP95_6 = zeros(1,size(rhoTraining6,1));
 % END initialization kalman filter task 5
 invalidRho=0;
 u_hat=zeros(2,1); % initialization of u_hat coordinates
 % not the same H of kalman filter(which is a 8*4)
-for i = 21:(size(rhoTraining6,1))
+for i = 1:(size(rhoTraining6,1))
     sizeValidMeasurements=0;
     indexValidMeasurements=zeros(1,Number_of_APs);
     for w=1:4 % max_iterations
@@ -847,9 +847,7 @@ for i = 21:(size(rhoTraining6,1))
                 invalidRho=invalidRho+1;
             end
         end
-  
-        
-       
+
         %INVERSION
         if(size_H_k>1 && invalidRho<Number_of_APs)
             delta_u_k=inv(H_k'*H_k)*H_k'*delta_ro_k;
@@ -863,7 +861,11 @@ for i = 21:(size(rhoTraining6,1))
     sizeValidMeasurements=size(H_k,1);
 
     if(invalidRho==Number_of_APs || invalidRho==Number_of_APs-1)
-        fprintf('there are no rho measurements available for this step->no prediction can be done:valid %d \n',Number_of_APs-invalidRho);
+        tempMatrix(1:2,1:2)= -1;
+        C_stored_6(1, i) = mat2cell(tempMatrix);
+        sigma_h_6(1, i) = -1;
+        CEP95_6(1, i) = -1;
+        fprintf('not enough TOA measurements available for this step->no prediction can be done: # valid %d \n',Number_of_APs-invalidRho);
         predictions([1 2],i)=u_hat; %riassegno come prediction ux,uy quella dello step precedente e con vx,vy=0
     else    
         %EKF code using x_hat as current location 
@@ -912,12 +914,8 @@ for i = 21:(size(rhoTraining6,1))
             end
 
         end
-        %if R is 1*1 is not possible to make the inverse
-        if(size(R_Partial,1)==1)
-            inv_R_Partial=R_Partial;
-        else
-            inv_R_Partial=inv(R_Partial);
-        end
+        
+        inv_R_Partial=inv(R_Partial);
 
         inv_P = inv(P_t_t_minus);
         tmp = (H'* inv_R_Partial * H); % optimizing inverse operation. that's why we use \ instead of inv()
@@ -929,15 +927,15 @@ for i = 21:(size(rhoTraining6,1))
         x_hat_t_minus_t_minus = x_hat_t_t;
         P_t_minus_t_minus = P_t_t;
 
-        %{ 
-        H,R attenzione
-        %computing performance metrics
-        %CALCULATING C
+         
+        % H,R attenzione
+        % computing performance metrics
+        % CALCULATING C
         C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies are different among themselves;
-        C_stored_5(1, i) = mat2cell(C,2); % storing C
-        sigma_h_5(1, i) = sqrt(C(1,1) + C(2,2)); % drms
-        CEP95_5(1, i) = 2 * sigma_h_5(1, i); % CEP
-        %}
+        C_stored_6(1, i) = mat2cell(C,2); % storing C
+        sigma_h_6(1, i) = sqrt(C(1,1) + C(2,2)); % drms
+        CEP95_6(1, i) = 2 * sigma_h_6(1, i); % CEP
+        
 
         % CRITICAL COMPARISON COMMENT:
         % w.r.t Task 4 we noticed by plotting the trajectories that the
@@ -947,17 +945,18 @@ for i = 21:(size(rhoTraining6,1))
     end
     
     %TODO: Add the switch 
-    if(mod(i, 41)== 0) % stopping before completing
+    if(mod(i, 3)== 0) % stopping before completing
         fprintf('stopping kalman iteration Task 6\n');
         break;
     end
        
-
 end
 
 %% PLOT KALMAN TRACKING Task 6
-switch task6Switch
+switch task6Switch    
     case true
+        plot_dir(predictions(1,:)', predictions(2, :)', i);
+        
         figure
         plot(predictions(1,:), predictions(2,:),'g--o');
         hold on
