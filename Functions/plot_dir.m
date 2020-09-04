@@ -1,4 +1,4 @@
-function [h1, h2] = plot_dir (vX, vY, lenTime)
+function [h1, h2] = plot_dir (vX, vY, lenTime,layout,layoutArrow)
     %function [h1, h2] = plot_dir (vX, vY)
     %Plotting x-y variables with direction indicating vector to the next element.
     % Example
@@ -31,8 +31,7 @@ function [h1, h2] = plot_dir (vX, vY, lenTime)
     vPy = (vYQ1 - vYQ0) * rMag;
 
     % make plot
-    h1 = plot (vX, vY, 'g-o'); hold on;
+    h1 = plot (vX, vY,layout); hold on;
     % add arrows
-    h2 = quiver (vXQ0,vYQ0, vPx, vPy, 0, 'r'); grid on; hold off
-    axis equal
+    h2 = quiver (vXQ0,vYQ0, vPx, vPy, 0, layoutArrow);
 end
