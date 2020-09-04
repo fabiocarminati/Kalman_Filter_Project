@@ -859,10 +859,10 @@ switch task6Switch
         sizeValidMeasurements=size(H_k,1);
 
         if(invalidRho==Number_of_APs || invalidRho==Number_of_APs-1)
-            tempMatrix(1:2,1:2)= -1;
-            C_stored_6(1, i) = mat2cell(tempMatrix);
-            sigma_h_6(1, i) = -1;
-            CEP95_6(1, i) = -1;
+%             tempMatrix(1:2,1:2)= -1;
+%             C_stored_6(1, i) = mat2cell(tempMatrix); non gira FIXME
+%             sigma_h_6(1, i) = -1;
+%             CEP95_6(1, i) = -1;
             fprintf('not enough TOA measurements available for this step->no prediction can be done: # valid %d \n',Number_of_APs-invalidRho);
             predictions([1 2],i)=u_hat; %riassegno come prediction ux,uy quella dello step precedente e con vx,vy=0
         else    
@@ -929,10 +929,10 @@ switch task6Switch
             % H,R attenzione
             % computing performance metrics
             % CALCULATING C
-            C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies are different among themselves;
-            C_stored_6(1, i) = mat2cell(C,2); % storing C
-            sigma_h_6(1, i) = sqrt(C(1,1) + C(2,2)); % drms
-            CEP95_6(1, i) = 2 * sigma_h_6(1, i); % CEP
+%             C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies are different among themselves;
+%             C_stored_6(1, i) = mat2cell(C,2); % storing C
+%             sigma_h_6(1, i) = sqrt(C(1,1) + C(2,2)); % drms
+%             CEP95_6(1, i) = 2 * sigma_h_6(1, i); % CEP
 
 
             % CRITICAL COMPARISON COMMENT:
@@ -943,10 +943,10 @@ switch task6Switch
         end
 
         %TODO:remove this break 
-        if(mod(i, 3)== 0) % stopping before completing
-            fprintf('stopping in the middle kalman iteration Task 6\n');
-            break;
-        end
+%         if(mod(i, 3)== 0) % stopping before completing
+%             fprintf('stopping in the middle kalman iteration Task 6\n');
+%             break;
+%         end
 
     end
     case false
