@@ -1,4 +1,4 @@
-function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)    
+function [CEP95_4,sigma_h_4,C_stored_4] = task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)    
 % we suppose that the motion model is still M3
     rhoTraining4 = importdata("GR35/Task4_rhoUEAP_GR35.mat"); % TOA measurements of trajectories
     % INITIALIZATION 

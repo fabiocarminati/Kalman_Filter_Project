@@ -1,4 +1,4 @@
-function task5(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)   
+function [CEP95_5,sigma_h_5,C_stored_5]=task5(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)   
     rhoTraining5 = importdata("GR35/Task5_rhoUEAP_GR35.mat"); % TOA measurements of trajectories
     % INITIALIZATION 
     P_t_minus_t_minus = eye(4);

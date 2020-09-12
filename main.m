@@ -15,8 +15,8 @@ parameters.xmax =  2000; parameters.ymax =  2000;
 
 task1aSwitch=false;
 task2Switch=false;
-task3Switch=false;
-task3TestingSwitch=true; 
+task3Switch=true;
+task3TestingSwitch=false; 
 task4Switch=false;
 task5Switch=false;
 task6Switch=false;
@@ -25,6 +25,7 @@ AP_Data = importdata("GR35/Task1a_rhoUEAP.mat");
 Number_of_APs = size(AP_Data, 1); % number of APs is mapped in row length
 u = [0, 0]; % reference point
 
+tic
 %% Task_1a: find position of the Access Points
 %The AOA and TOA measurements for each AP are placed in a system in order to find the
 %its coordinates
@@ -107,7 +108,8 @@ end
 
 R = diag(sigma_squared);
 R = round(R); % covariance matrix
-
+toc
+tic
 %% Task 2 motion models statistics and parameters
 % We observe the trajectory dataset and since
 %1)Ux,Ux,Vx,Vy are given
@@ -202,7 +204,7 @@ case false
         fprintf('No plot task 2 \n');
 end
 
-
+toc
 %PARAMETERS INITIALIZATION for task 3,4,5,6
 sigma_squared_a = mean([var_x var_y]); % finding scalar sigma (x_var(3,3) is variance of vx while x_var(4,4) is variance of vy)
 inv_R = inv(R); % calculating only one time, the inverse of R
@@ -213,6 +215,7 @@ F = [eye(2)     , Ts*eye(2);
 L = [0.5*Ts^2*eye(2);Ts*eye(2)];
 Q = sigma_squared_a * (L * L'); % finding Q
 
+tic
 %% TASK 3:Kalman Filter on known trajectory 
 %{ 
 Some assumptions:
@@ -223,7 +226,8 @@ Some assumptions:
 %}
 switch task3Switch
     case true 
-        task3(Number_of_APs,AP,trajectories,Q,inv_R,F,points_x,points_y,AP_IDs);
+        ID_trajectory=72;
+        [CEP95,sigma_h,C_stored]=task3(ID_trajectory,Number_of_APs,AP,trajectories,Q,inv_R,F,points_x,points_y,AP_IDs);
     case false
         fprintf('no kalman filter Task 3\n');
  end
@@ -257,27 +261,31 @@ switch task3TestingSwitch
     case false
         fprintf('Do not test the trajectory prediction \n');
 end
-
+toc
+tic
 %% Task 4:Kalman Filter over an unknown trajectory
 switch task4Switch
     case true 
-        task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs);
+        [CEP95_4,sigma_h_4,C_stored_4]=task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs);
     case false
         fprintf('no kalman filter Task 4\n');
 end
-
+toc
+tic
 %% Task 5:Kalman Filter over an unknown trajectory    
 switch task5Switch
     case true
-        task5(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs);
+        [CEP95_5,sigma_h_5,C_stored_5]=task5(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs);
     case false
          fprintf('no kalman filter Task 5\n');   
 end
-
+toc
+tic
 %% Task 6:Kalman Filter over an unknown trajectory  
 switch task6Switch    
     case true
-        task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R);
+        [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R);
     case false
         fprintf('no kalman filter Task 6\n');
 end
+toc

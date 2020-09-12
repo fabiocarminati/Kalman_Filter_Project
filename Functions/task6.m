@@ -1,4 +1,4 @@
-function task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R) 
+function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R) 
     rhoTraining6 = importdata("GR35/Task6_rhoUEAP_GR35.mat");
     %{
         The main difference w.r.t. previous tasks is that for some elements of
