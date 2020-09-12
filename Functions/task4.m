@@ -1,14 +1,14 @@
 function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)    
 % we suppose that the motion model is still M3
-    rhoTraining4 = importdata("GR35/Task4_rhoUEAP_GR35.mat"); % TOA measurements of trojectories
+    rhoTraining4 = importdata("GR35/Task4_rhoUEAP_GR35.mat"); % TOA measurements of trajectories
     % INITIALIZATION 
     
-    P_t_minus_t_minus = eye(4);% cov(trajectory); % initializing P
+    P_t_minus_t_minus = eye(4);
 
     x_hat_t_minus_t_minus = zeros(4,1); 
     predictions= zeros(4, size(rhoTraining4,1)); % used for plotting
 
-    vx_zero = 50 *1000 / 3600; % in m/s
+    vx_zero = 50 *1000 / 3600; % express velocity in m/s
 
     u_hat_trajectory = zeros(size(rhoTraining4,1), 2);
 
@@ -19,38 +19,19 @@ function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)
     % END initialization kalman filter task 4
 
     u_hat=zeros(2,1); % initialization of u_hat coordinates
-    % not the same H of kalman filter(which is a 8*4)
     for i = 1:(size(rhoTraining4,1))
-        for w=1:4 % max_iterations
-            delta_ro_k=zeros(Number_of_APs,1);
-            H_k=zeros(8,2);
-            for j = 1 : Number_of_APs   
-                % COMPUTATION          
-                syms ux_hat uy_hat; % computing H through derivatives
-                f = sqrt((AP(j,1) - ux_hat)^2 + (AP(j,2) - uy_hat)^2);
-                a_dx = diff(f, ux_hat);
-                a_dy = diff(f, uy_hat);
-                H_k(j,1) = vpa(subs(a_dx, [ux_hat, uy_hat], [u_hat(1,1), u_hat(2,1)]), 5);
-                H_k(j,2) = vpa(subs(a_dy, [ux_hat, uy_hat], [u_hat(1,1), u_hat(2,1)]), 5);
-                delta_ro_j_k=rhoTraining4(i,j)-sqrt((AP(j,1) - u_hat(1,1))^2 + (AP(j,2) - u_hat(2,1))^2);% (i,j) dovra essere!
-                delta_ro_k(j,1)=delta_ro_j_k;
-            end
-            %INVERSION
-            delta_u_k=inv(H_k'*H_k)*H_k'*delta_ro_k;
-            %UPDATE SOLUTION
-            u_hat=u_hat+delta_u_k;
+        %Estimante current location (u_hat) through NLS
+        u_hat=test3NLS(Number_of_APs,AP,rhoTraining4,i);
 
-            %saving u_hat for plotting
-            u_hat_trajectory(i,:) = u_hat';
-        end
+        %saving u_hat for plotting
+        u_hat_trajectory(i,:) = u_hat';
+        
+        %EKF code using estimated u_hat
 
-        %EKF code using x_hat as current location 
-
-        % PREDICTION SECTION OF KALMAN FILTER
-        % assuming F, Q constant
+        % PREDICTION assuming F, Q constant
 
         if (i == 1)
-            x_hat_t_minus_t_minus = u_hat; % still missing the velocity part
+            x_hat_t_minus_t_minus = u_hat; 
 
             x_hat_t_minus_t_minus(3,1) = vx_zero;
             x_hat_t_minus_t_minus(4,1) = 0; % we suppose velocity on y axis = 0
@@ -58,8 +39,8 @@ function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)
             x_hat_t_t_minus = x_hat_t_minus_t_minus;
             P_t_t_minus = P_t_minus_t_minus;    
         else
-            x_hat_t_t_minus = F * x_hat_t_minus_t_minus; % remember to update at the end x_hat_t_minus_t_minus
-            P_t_t_minus = F * P_t_minus_t_minus * F' + Q; % remember to update at the end P_t_minus_t_minus
+            x_hat_t_t_minus = F * x_hat_t_minus_t_minus; 
+            P_t_t_minus = F * P_t_minus_t_minus * F' + Q; 
         end
 
         predictions(:,i)=x_hat_t_t_minus(:,1); % for plotting
@@ -79,7 +60,7 @@ function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)
             a_ux_final = vpa(subs(a_dx, [ux, uy], [u_hat(1,1), u_hat(2,1)]), 5);
             a_uy_final = vpa(subs(a_dy, [ux, uy], [u_hat(1,1), u_hat(2,1)]), 5);
 
-            H(j,1) = a_ux_final; % no minus because we use the approach of the derivatives.
+            H(j,1) = a_ux_final;
             H(j,2) = a_uy_final;
             H(j,3) = 0; % h is constant w.r.t velocity => derivative w.r.t velocity = 0
             H(j,4) = 0; % same here
@@ -99,7 +80,7 @@ function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)
 
         %computing performance metrics
         %CALCULATING C
-        C = inv(H(:,1:2)'*inv_R*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies are different among themselves;
+        C = inv(H(:,1:2)'*inv_R*H(:,1:2)); % calculating lower bound since: R not equal to sigma * I => accuracies of the various APs are different
         C_stored_4(1, i) = mat2cell(C,2); % storing C
         sigma_h_4(1, i) = sqrt(C(1,1) + C(2,2)); % drms
         CEP95_4(1, i) = 2 * sigma_h_4(1, i); % CEP
@@ -123,7 +104,7 @@ function task4(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs)
     grid on
     grid minor
 
-    %we assume sampling rate=Ts=1
+    %we assume sampling rate=Ts=1s
     timeVector  = linspace(1,size(rhoTraining4,1),size(rhoTraining4,1));
 
     %plot vx

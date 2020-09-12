@@ -19,7 +19,7 @@ task3Switch=false;
 task3TestingSwitch=true; 
 task4Switch=false;
 task5Switch=false;
-task6Switch=false;
+task6Switch=true;
 %% importing data
 AP_Data = importdata("GR35/Task1a_rhoUEAP.mat");
 Number_of_APs = size(AP_Data, 1); % number of APs is mapped in row length
@@ -178,7 +178,7 @@ switch task2Switch
         title('M3 Trajectories')
         grid on
         
-        %% plot task 2 w_at
+        %% plot task 2 velocity variation (w_at)
         figure
         delta_v_x = zeros(1, (size(w_a,2)-1)/100);
         delta_v_y = zeros(1, (size(w_a,2)-1)/100);
@@ -232,28 +232,7 @@ switch task3Switch
 
 switch task3TestingSwitch
     case true
-        ID_trajectory = 5; % choose your trajectory here
-        trajectory = cell2mat(trajectories(1,ID_trajectory)); 
-        rhoTraining = importdata("GR35/Task3_rhoUEAP_GR35.mat"); % TOA measurements of trajectories
-        measurement_of_current_trajectory = cell2mat(rhoTraining(1,ID_trajectory)); %taking TOA of this trajectory
-        u_hat=zeros(2,1);
-        u_hat_trajectory = zeros(size(measurement_of_current_trajectory,1), 2);
-        for i = 1:(size(measurement_of_current_trajectory,1))
-            u_hat=test3NLS(Number_of_APs,AP,measurement_of_current_trajectory,i);
-            u_hat_trajectory(i,:) = u_hat';
-        end
-        figure
-        plot(trajectory(:,1), trajectory(:,2));
-        hold on
-        plot(u_hat_trajectory(:,1), u_hat_trajectory(:,2));
-        legend('Real','Predicted UE location','Location','bestoutside')
-        hold on
-        xlabel('Ux')
-        ylabel('Uy')
-        title('Test NLS')
-        grid on
-        grid minor
-        
+        test3NLS(Number_of_APs,AP,trajectories);
     case false
         fprintf('Do not test the trajectory prediction \n');
 end
@@ -266,7 +245,10 @@ switch task4Switch
         fprintf('no kalman filter Task 4\n');
 end
 
-%% Task 5:Kalman Filter over an unknown trajectory    
+% Task 4 can be improved by using WNLS (delta_u_k=inv(H_k'*inv_R*H_k)*H_k'*inv_R*delta_ro_k) instead of NLS to improve the
+% accuracy of u_hat
+
+%% Task 5    
 switch task5Switch
     case true
         task5(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs);
@@ -274,7 +256,7 @@ switch task5Switch
          fprintf('no kalman filter Task 5\n');   
 end
 
-%% Task 6:Kalman Filter over an unknown trajectory  
+%% Task 6
 switch task6Switch    
     case true
         task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R);

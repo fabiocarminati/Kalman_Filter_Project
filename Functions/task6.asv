@@ -1,15 +1,15 @@
 function task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R) 
     rhoTraining6 = importdata("GR35/Task6_rhoUEAP_GR35.mat");
     %{
-        The main difference w.r.t. previous tasks is that for some elements of
-        the trajectories there are some measurements missing (NaN)->use isnan(...) matlab function.
-        From the code perspective it means that for each rho measurement we need to:
-        1)In the NLS part:resize dynamically delta_ro_k and H_k according to
-        the valid RHO values available
-        2)In EKF: h,H,rho and R size depends on the valid RHO values available
-        Since we have lower measurements available what we expect is that 
-        1)Task 6 is less accuracy (see CEP95/drms values)
-        2)The computation will be faster (smaller matrix)
+    The main difference w.r.t. previous tasks is that for some elements of
+    the trajectories there are some measurements missing (NaN)->use isnan(...) matlab function.
+    From the code perspective it means that for each rho measurement we need to:
+    1)In the NLS part:resize dynamically delta_ro_k and H_k according to
+    the valid RHO values available
+    2)In EKF: h,H,rho and R size depends on the valid RHO values available
+    Since we have lower measurements available what we expect is that 
+    1)Task 6 is less accuracy (see CEP95/drms values)
+    2)The computation will be faster (smaller matrix)
     %}
     % INITIALIZATION 
     P_t_minus_t_minus = eye(4);

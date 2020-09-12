@@ -19,7 +19,7 @@ task3Switch=false;
 task3TestingSwitch=true; 
 task4Switch=false;
 task5Switch=false;
-task6Switch=false;
+task6Switch=true;
 %% importing data
 AP_Data = importdata("GR35/Task1a_rhoUEAP.mat");
 Number_of_APs = size(AP_Data, 1); % number of APs is mapped in row length
@@ -178,7 +178,7 @@ switch task2Switch
         title('M3 Trajectories')
         grid on
         
-        %% plot task 2 w_at
+        %% plot task 2 velocity variation (w_at)
         figure
         delta_v_x = zeros(1, (size(w_a,2)-1)/100);
         delta_v_y = zeros(1, (size(w_a,2)-1)/100);
@@ -233,6 +233,7 @@ switch task3Switch
 switch task3TestingSwitch
     case true
         ID_trajectory = 5; % choose your trajectory here
+        %row_=11; % row used to test the NLS in the chosen trajectory
         trajectory = cell2mat(trajectories(1,ID_trajectory)); 
         rhoTraining = importdata("GR35/Task3_rhoUEAP_GR35.mat"); % TOA measurements of trajectories
         measurement_of_current_trajectory = cell2mat(rhoTraining(1,ID_trajectory)); %taking TOA of this trajectory
@@ -246,14 +247,16 @@ switch task3TestingSwitch
         plot(trajectory(:,1), trajectory(:,2));
         hold on
         plot(u_hat_trajectory(:,1), u_hat_trajectory(:,2));
-        legend('Real','Predicted UE location','Location','bestoutside')
+        legend('Real','Predicted UE location''Location','bestoutside')
         hold on
         xlabel('Ux')
         ylabel('Uy')
         title('Test NLS')
         grid on
         grid minor
-        
+
+        %fprintf("real (ux,uy) (%d,%d)\n",trajectory(row_,1),trajectory(row_,2));
+        %fprintf("estimated (ux,uy) (%d,%d)\n",u_hat(1,1),u_hat(2,1));
     case false
         fprintf('Do not test the trajectory prediction \n');
 end
@@ -274,7 +277,7 @@ switch task5Switch
          fprintf('no kalman filter Task 5\n');   
 end
 
-%% Task 6:Kalman Filter over an unknown trajectory  
+%% Task 6
 switch task6Switch    
     case true
         task6(Number_of_APs,AP,Q,inv_R,F,points_x,points_y,AP_IDs,R);
