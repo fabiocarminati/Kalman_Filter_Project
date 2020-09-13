@@ -34,6 +34,7 @@ function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_
             delta_ro_k=zeros(1,1); %delta_ro_k is by default of size 1 and could be of size 8 only if all the 8 rhos are not NaN
             H_k=zeros(1,2); %H_k is by default of size 1 and could be of size 8 only if all the 8 rhos are not NaN
             firstValidValue=false;
+            
             for j = 1 : Number_of_APs
                 if(isnan(rhoTraining6(i,j))==false)
                     if(firstValidValue==true)
@@ -71,7 +72,7 @@ function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_
 
         if(invalidRho==Number_of_APs || invalidRho==Number_of_APs-1)
             tempMatrix(1:2,1:2)= -1;
-            C_stored_6(1, i) = mat2cell(tempMatrix); 
+            C_stored_6(1, i) = mat2cell(tempMatrix,2); 
             sigma_h_6(1, i) = -1;
             CEP95_6(1, i) = -1;
             fprintf('not enough TOA measurements available for this step->no prediction can be done: # valid %d \n',Number_of_APs-invalidRho);
@@ -138,12 +139,13 @@ function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_
 
             % computing performance metrics
             % CALCULATING C
-             C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); 
-             C_stored_6(1, i) = mat2cell(C,2); % storing C
-             sigma_h_6(1, i) = sqrt(C(1,1) + C(2,2)); % drms
-             CEP95_6(1, i) = 2 * sigma_h_6(1, i); % CEP
-
+            C = inv(H(:,1:2)'*inv_R_Partial*H(:,1:2)); 
+            C_stored_6(1, i) = mat2cell(C,2); % storing C
+            sigma_h_6(1, i) = sqrt(C(1,1) + C(2,2)); % drms
+            CEP95_6(1, i) = 2 * sigma_h_6(1, i); % CEP
+            
         end
+        
     end
     
     %% PLOT KALMAN TRACKING Task 6

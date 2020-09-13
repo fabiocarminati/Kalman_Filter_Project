@@ -14,8 +14,8 @@ parameters.xmax =  2000; parameters.ymax =  2000;
 % Since tasks 1,2 are mandatory for other tasks they are always computed and their switches refers just to their plot 
 
 task1aSwitch=false;
-task2Switch=false;
-task3Switch=true;
+task2Switch=true;
+task3Switch=false;
 task3TestingSwitch=false; 
 task4Switch=false;
 task5Switch=false;
@@ -80,6 +80,7 @@ switch task1aSwitch
         text(points_x, points_y,AP_IDs,'Color','blue','FontSize',12)
         hold on
         plot(0,0, 'r-x');
+        text(0,0,"Reference point",'FontSize',10)
         xlabel('APx')
         ylabel('APy')
         title('AP exact positions')
@@ -179,6 +180,7 @@ switch task2Switch
         ylabel('Uy[m]')
         title('M3 Trajectories')
         grid on
+        grid minor
         
         %% plot task 2 w_at
         figure

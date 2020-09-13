@@ -67,11 +67,7 @@ function [CEP95,sigma_h,C_stored]=task3(ID_trajectory,Number_of_APs,AP,trajector
         C_stored(1, i) = mat2cell(C,2); % storing C
         sigma_h(1, i) = sqrt(C(1,1) + C(2,2)); % drms
         CEP95(1, i) = 2 * sigma_h(1, i); % CEP
-        
-        if(mod(i, 15)== 0) % stopping before completing
-            fprintf('Task 3 step: %d \n',i);            
-        end
-        
+                
     end
 
  %% PLOT Task 3 KALMAN TRACKING
