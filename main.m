@@ -14,7 +14,7 @@ parameters.xmax =  2000; parameters.ymax =  2000;
 % Since tasks 1,2 are mandatory for other tasks they are always computed and their switches refers just to their plot 
 
 task1aSwitch=false;
-task2Switch=true;
+task2Switch=false;
 task3Switch=false;
 task3TestingSwitch=false; 
 task4Switch=false;
@@ -221,7 +221,7 @@ tic
 %% TASK 3:Kalman Filter on known trajectory 
 %{ 
 Some assumptions:
-1)X is initialized with the first line of the chosen trajectory (measurement)
+1)X is initialized with the first line of the chosen trajectory 
 (1 trajectory at a time)
 2)P is initialized as an eye matrix 4*4
 3)assuming F, Q constant over time
