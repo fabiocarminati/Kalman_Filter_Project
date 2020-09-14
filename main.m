@@ -19,7 +19,7 @@ task3Switch=false;
 task3TestingSwitch=false; 
 task4Switch=false;
 task5Switch=false;
-task6Switch=false;
+task6Switch=true;
 %% importing data
 AP_Data = importdata("GR35/Task1a_rhoUEAP.mat");
 Number_of_APs = size(AP_Data, 1); % number of APs is mapped in row length
