@@ -2,7 +2,7 @@ function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_
     rhoTraining6 = importdata("GR35/Task6_rhoUEAP_GR35.mat");
     %{
         The main difference w.r.t. previous tasks is that for some elements of
-        the trajectories there are some measurements missing (NaN)->use isnan(...) matlab function.
+        the trajectory there are some measurements missing (NaN)->use isnan(...) matlab function.
         From the code perspective it means that for each rho measurement we need to:
         1)In the NLS part:resize dynamically delta_ro_k and H_k according to
         the valid RHO values available
@@ -63,7 +63,6 @@ function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_
                 delta_u_k=inv(H_k'*H_k)*H_k'*delta_ro_k;
                 %UPDATE SOLUTION
                 u_hat=u_hat+delta_u_k;
-            %if size==1 delta_u_k explodes-->I can say that for that point I do not have enough information->I cannot update x_hat
             end
         end
         %saving u_hat for plotting
@@ -71,12 +70,14 @@ function [CEP95_6,sigma_h_6,C_stored_6]=task6(Number_of_APs,AP,Q,inv_R,F,points_
         sizeValidMeasurements=size(H_k,1);
 
         if(invalidRho==Number_of_APs || invalidRho==Number_of_APs-1)
-            tempMatrix(1:2,1:2)= -1;
+            tempMatrix(1:2,1:2)= NaN;
             C_stored_6(1, i) = mat2cell(tempMatrix,2); 
-            sigma_h_6(1, i) = -1;
-            CEP95_6(1, i) = -1;
+            sigma_h_6(1, i) = NaN;
+            CEP95_6(1, i) = NaN;
             fprintf('not enough TOA measurements available for this step->no prediction can be done: # valid %d \n',Number_of_APs-invalidRho);
-            predictions([1 2],i)=u_hat; %prediction ux,uy is the one of the previous step
+            NaN_Vector=zeros(4,1);
+            NaN_Vector(:,1)=NaN;
+            predictions(:,i)=NaN_Vector; %prediction ux,uy is NaN
         else    
             %EKF code using x_hat as current location 
 
