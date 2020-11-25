@@ -24,7 +24,7 @@ Each task could be useful for the next ones thus their order of execution is rel
 
 First we need to find the exact location of the APs (that won't change during the tasks) using measurements with no noise.
 
-<img src="\pictures\APs.png" alt="image-20201125173722812" style="zoom: 67%;" />
+![alt text](pictures/APs.png?raw=true)
 
 Then the covariance matrix of TOA measurements is computed.
 
@@ -42,7 +42,7 @@ Then the covariance matrix of TOA measurements is computed.
 
 Implementation of an **Extended Kalman Filter** over a known user trajectory and using the previous results obtained by tasks 1,2.
 
-<img src="\pictures\EKF3.png" alt="image-20201125173722812" style="zoom: 67%;" />
+![alt text](pictures/EKF3.png?raw=true)
 
 (red is the real trajectory; green is the predicted one by the **Extended Kalman Filter**)
 
@@ -52,7 +52,7 @@ Implement an **Extended Kalman Filter** by using the variable “rhoUEAP.mat” 
 
 The reconstructed trajectory should emulate a car, which at the beginning is moving at 50 km/h (almost 14 m/s ) along the x-axis.
 
-<img src="\pictures\velocities.png" alt="image-20201125173722812" style="zoom: 67%;" />
+![alt text](pictures/velocities.png?raw=true)
 
 (predicted velocities in m/s)
 
