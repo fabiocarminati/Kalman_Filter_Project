@@ -1,3 +1,4 @@
+%Kangwon Lee (2020). Plot With Direction (https://www.mathworks.com/matlabcentral/fileexchange/1676-plot-with-direction), MATLAB Central File Exchange. Retrieved November 25, 2020.
 function [h1, h2] = plot_dir (vX, vY, lenTime,layout,layoutArrow)
     %function [h1, h2] = plot_dir (vX, vY)
     %Plotting x-y variables with direction indicating vector to the next element.

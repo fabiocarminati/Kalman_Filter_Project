@@ -1,6 +1,0 @@
-Execution time:
-Task1:11.835756 seconds.
-Task2: 4.798862 seconds.
-Task4:14435.569326 seconds.
-Task5:14371.760337 seconds.
-Task6:4397.036879 seconds.

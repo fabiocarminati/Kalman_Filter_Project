@@ -37,7 +37,7 @@ for i = 1:Number_of_APs
     toa_measurement = AP_Data(i,1);
     aoa_measurement = AP_Data(i,2);
     sign=1;
-    if(aoa_measurement>pi/2) %if TOA is not in the range [-pi/2,pi/2] the atan matlab function doesnt work. So we
+    if(aoa_measurement>pi/2) %If TOA is not in the range [-pi/2,pi/2] the atan matlab function doesnt work. So we
                                %always want values in that range; if
                                %necessary we chenge aoa_measurement value
                                %and consequantly add a - (minus sign) on
