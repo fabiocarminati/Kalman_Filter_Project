@@ -34,7 +34,7 @@ Then the covariance matrix of TOA measurements is computed.
 1)Ux,Ux,Vx,Vy are given
 2)There is a random acceleration process whose mean is 0 while the variance is not 0  we came to the conclusion that this is a M3 motion model: **Random Force model.**
 
-<img src="\pictures\trajectories.png" alt="image-20201125173722812" style="zoom: 67%;" />
+![alt text](pictures/trajectories.png?raw=true)
 
 (first 10 M3 user trajectories)
 
