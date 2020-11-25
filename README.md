@@ -19,6 +19,7 @@ Each task could be useful for the next ones thus their order of execution is rel
 **Matlab** is required.
 
 ### Tasks
+Run *main.m* :
 
 ##### 1) Learning the AP positions and the measurement model:
 
